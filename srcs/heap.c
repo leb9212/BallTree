@@ -6,137 +6,133 @@
 /*   By: elee <elee@student.42.us.org>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/28 10:45:06 by elee              #+#    #+#             */
-/*   Updated: 2017/06/28 10:45:06 by elee             ###   ########.fr       */
+/*   Updated: 2017/06/28 11:31:40 by elee             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ball.h"
 
-int *heap, size, count;
-int initial_size = 4;
-
-t_heap	heap_init(void)
+t_heap	heap_init(int n_pts, int n_nbrs)
 {
 	t_heap	h;
+	int		i, j;
 
 	h = (t_heap*)malloc(sizeof(t_heap));
-	if (!h)
+	h->n_pts = n_pts;
+	h->n_nbrs = n_nbrs;
+	h->distances = (double**)malloc(sizeof(double*) * n_pts);
+	for (i = 0; i < n_pts; i++)
 	{
-		printf("Error allocating for heap data structure\n");
-		exit(-1);
+		distances[i] = (double*)malloc(sizeof(double) * n_nbrs);
+		for (j = 0; j < n_nbrs; j++)
+			distances[i][j] = INFINITY;
 	}
-	h->count = 0;
-	h->size = HEAP_INITIAL_SIZE;
-	h->heaparr = (double*)malloc(sizeof(double) * HEAP_INITAL_SIZE);
-	if (!h->heapparr)
-	{
-		printf("Error allocating for heaparr in heap data structure\n");
-		exit(-1);
-	}
+	h->indices = (int**)malloc(sizeof(int*) * n_pts);
+	for (int i = 0; i < n_pts; i++)
+		indices[i] = (int*)calloc(sizeof(int), n_nbrs);
 	return (h);
 }
 
-void	max_heapify(double *data, int loc, int count)
+double	heap_largest(t_heap *h, int row)
 {
-	int	left, right, largeset, temp;
-
-	left = 2 * loc + 1;
-	right = left + 1;
-	largest = loc;
-
-}
-void max_heapify(int *data, int loc, int count) {
-	int left, right, largest, temp;
-	left = 2*(loc) + 1;
-	right = left + 1;
-	largest = loc;
-	
-
-	if (left <= count && data[left] > data[largest]) {
-		largest = left;
-	} 
-	if (right <= count && data[right] > data[largest]) {
-		largest = right;
-	} 
-	
-	if(largest != loc) {
-		temp = data[loc];
-		data[loc] = data[largest];
-		data[largest] = temp;
-		max_heapify(data, largest, count);
-	}
-
+	return (h->distances[row][0]);
 }
 
-void heap_push(struct heap *h, int value)
+int		heap_push(t_heap *h, int row, double val, int i_val)
 {
-	int index, parent;
- 
-	// Resize the heap if it is too small to hold all the data
-	if (h->count == h->size)
-	{
-		h->size += 1;
-		h->heaparr = realloc(h->heaparr, sizeof(int) * h->size);
-		if (!h->heaparr) exit(-1); // Exit if the memory allocation fails
-	}
- 	
- 	index = h->count++; // First insert at last of array
+	int		i, ic1, ic2, i_swap;
+	int		size;
+	double	*dist_arr;
+	double	*ind_arr;
 
- 	// Find out where to put the element and put it
-	for(;index; index = parent)
+	size = h->n_nbrs;
+	dist_arr = h->distances[row];
+	ind_arr = h->indices[row];
+
+	// if distance is already greater than the furthest element, don't push
+	if (val > dist_arr[0])
+		return (0);
+
+	// insert the values at position 0
+	dist_arr[0] = val;
+	ind_arr[0] = i_val;
+
+	// descend the heap, swapping values until the max heap criterion is met
+	i = 0;
+	while (TRUE)
 	{
-		parent = (index - 1) / 2;
-		if (h->heaparr[parent] >= value) break;
-		h->heaparr[index] = h->heaparr[parent];
+		ic1 = 2 * i + 1;
+		ic2 = ic1 + 1;
+
+		if (ic1 >= size)
+			break ;
+		else if (ic2 >= size)
+		{
+			if (dist_arr[ic2] > val)
+				i_swap = ic1;
+			else
+				break ;
+		}
+		else if (dist_arr[ic1] >= dist_arr[ic2])
+		{
+			if (val < dist_arr[ic1])
+				i_swap = ic1;
+			else
+				break ;
+		}
+		else
+		{
+			if (val < dist_arr[ic2])
+				i_swap = ic2;
+			else
+				break ;
+		}
+		dist_arr[i] = dist_arr[i_swap];
+		ind_arr[i] = ind_arr[i_swap];
+		i = i_swap;
 	}
-	h->heaparr[index] = value;
+
+	dist_arr[i] = val;
+	ind_arr[i] = i_val;
+
+	return (0);
 }
 
-void heap_display(struct heap *h) {
-	int i;
-	for(i=0; i<h->count; ++i) {
-		printf("|%d|", h->heaparr[i]);
-	}
-	printf("\n");
-}
-
-int heap_delete(struct heap *h)
+double	**copy_double(double **arr, int row, int col)
 {
-	int removed;
-	int temp = h->heaparr[--h->count];
- 	
-	
-	if ((h->count <= (h->size + 2)) && (h->size > initial_size))
+	double	**copy;
+	int		i, j;
+
+	copy = (double**)malloc(sizeof(double*) * row);
+	for (i = 0; i < row; i++)
 	{
-		h->size -= 1;
-		h->heaparr = realloc(h->heaparr, sizeof(int) * h->size);
-		if (!h->heaparr) exit(-1); // Exit if the memory allocation fails
+		copy[i] = (double*)malloc(sizeof(double) * col);
+		for (j = 0; j < col; j++)
+			copy[i][j] = arr[i][j];
 	}
- 	removed = h->heaparr[0];
- 	h->heaparr[0] = temp;
- 	max_heapify(h->heaparr, 0, h->count);
- 	return removed;
+	return (copy);
 }
 
+double	**copy_int(int **arr, int row, int col)
+{
+	int		**copy;
+	int		i, j;
 
-int emptyPQ(struct heap *pq) {
-	int i;
-	while(pq->count != 0) {
-		printf("<<%d", heap_delete(pq));
+	copy = (int**)malloc(sizeof(int*) * row);
+	for (i = 0; i < row; i++)
+	{
+		copy[i] = (int*)malloc(sizeof(int) * col);
+		for (j = 0; j < col; j++)
+			copy[i][j] = arr[i][j];
 	}
+	return (copy);
 }
-int main() {
-	struct heap h;
-	heap_init(&h);
-	heap_push(&h,1);
-	heap_push(&h,5);
-	heap_push(&h,3);
-	heap_push(&h,7);
-	heap_push(&h,9);
-	heap_push(&h,8);
-	heap_display(&h);
-	heap_display(&h);
-	emptyPQ(&h);
-	return 0;
 
+t_knn	get_arrays(t_heap *h)
+{
+	t_knn	output;
+
+	output.distances = copy_double(h->distances, h->n_pts, h->n_nbrs);
+	output.indices = copy_int(h->indices, h->n_pts, h->n_nbrs);
+	return (output);
 }
