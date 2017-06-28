@@ -6,7 +6,7 @@
 /*   By: elee <elee@student.42.us.org>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/28 10:55:27 by elee              #+#    #+#             */
-/*   Updated: 2017/06/28 10:55:27 by elee             ###   ########.fr       */
+/*   Updated: 2017/06/28 12:12:13 by elee             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,14 +20,22 @@
 # include <math.h>
 # include <float.h>
 
-# define HEAP_INITIAL_SIZE 8
+# define TRUE 1
+# define FALSE 0
 
 typedef struct	s_heap
 {
-	int			size;
-	int			count;
-	double		*heapparr;
+	double		**distances;
+	int			**indices;
+	int			n_pts;
+	int			n_nbrs;
 }				t_heap;
+
+typedef struct	s_knn
+{
+	double		**distances;
+	int			**indices;
+}				t_knn;
 
 typedef	struct	s_nodedata
 {
@@ -37,22 +45,25 @@ typedef	struct	s_nodedata
 	double		radius;
 }				t_nodedata;
 
-typedef struct	s_binarytree
+typedef struct	s_btree
 {
-	double		*data_arr;
-	int			*idx_array_arr;
-	double		*node_data_arr;
-	double		*node_bounds_arr;
+	double		**data;
+	int			**idx_array;
+	t_nodedata	node_data;
+	double		*node_bounds;
+
+	int			n_samples;
+	int			n_features;
 
 	int			leaf_size;
 	int			n_levels;
 	int			n_nodes;
-	//dist metric is always going to be manhattan distance
+
 	int			n_trims;
 	int			n_leaves;
 	int			n_splits;
 	int			n_calls;
-}				t_binarytree;
+}				t_btree;
 
 
 double	manhattan_dist(double *x1, double *x2, int size);
