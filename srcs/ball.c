@@ -6,7 +6,7 @@
 /*   By: elee <elee@student.42.us.org>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/28 10:45:02 by elee              #+#    #+#             */
-/*   Updated: 2017/06/28 12:14:52 by elee             ###   ########.fr       */
+/*   Updated: 2017/06/28 13:28:57 by elee             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,6 +69,137 @@ void	btree_zero(t_btree *b)
 	b->n_calls = 0;
 }
 
+int		init_node(t_btree *b, int i_node, int idx_start, int idx_end)
+{
+	int		n_features
+	int		n_points;
+	
+	int		i, j;
+	double	radius;
+
+	double	*centroid;
+
+	n_features = b->n_features;
+	n_points = idx_end - idx_start;
+	
+	data = b->data[0];
+	centroid = b->node_bounds[0][i_node];
+
+	for (j = 0; j < n_features; j++)
+		centroid[j] = 0.0;
+
+	for (i = idx_start; i < idx_end; i++)
+		for (j = 0 ; j < n_features; j++)
+			centroid[j] += b->data[i][j];
+
+	for (j = 0; j < n_features; j++)
+		centroid[j] /= n_points;
+
+	radius = 0.0;
+	for (i = idx_start; i < idx_end; i++)
+		radius = fmax(radius, manhattan_dist(centroid, b->data[i], n_features);
+
+	b->node_data[i_node].radius = radius;
+	b->node_data.idx_start = idx_start;
+	b->node_data.idx_end = idx_end;
+	return (0);
+}
+
+int		find_node_split_dim(double **data, int *node_indices, int n_features, int n_points)
+{
+	double	min_val, max_val, val, spread, max_spread;
+	int		i, j, j_max;
+
+	j_max = 0;
+	max_spread = 0;
+	for (j = 0; j < n_features; j++)
+	{
+		max_val = data[node_indices[0]][j];
+		min_val = max_val;
+		for (i = 1; i < n_points; i++)
+		{
+			val = data[node_indices[i]][j];
+			max_val = fmax(max_val, val);
+			min_val = fmin(min_val, val);
+		}
+		spread = max_val - min_val;
+		if (spread > max_spread)
+		{
+			max_spread = spread;
+			j_max = j;
+		}
+	}
+	return (j_max);
+}
+
+int		partition_node_indices(double **data, int *node_indices, int split_dim, int split_index,
+								int n_features, int n_points)
+{
+	int		left, right, midindex, i;
+	double	d1, d2;
+
+	left = 0;
+	right = n_points - 1;
+
+	while (TRUE)
+	{
+		midindex = left;
+		for (i = left; i < right; i++)
+		{
+			d1 = data[node_indices[i]][split_dim];
+			d2 = data[node_indices[right]][split_dim];
+			if (d1 < d2)
+			{
+				swap(node_indices, i, midindex)
+				midindex += 1;
+			}
+		}
+		swap(node_indices, midindex, right);
+		if (midindex == split_index)
+			break ;
+		else if (midindex < split_index)
+			left = midindex + 1;
+		else
+			right = midindex - 1;
+	}
+	return (0);
+}
+
+int		recursive_build(t_btree *b, int i_node, int idx_start, int idx_end)
+{
+	int	imax;
+	int	n_features;
+	int	n_points;
+	int	n_mid;
+
+	n_features = b->n_features;
+	n_points = idx_end - idx_start;
+	n_mid = n_points / 2;
+
+	//initialize the node data
+	init_node(b, i_node, idx_start, idx_end);
+
+	if (2 * i_node + 1 >= b->n_nodes)
+	{
+		b->node_data[i_node].is_leaf = TRUE;
+		if (idx_end - idx_start > 2 * b->leaf_size)
+			printf("Memory layout is flawed: not enough nodes allocated");
+	}
+	else if (idx_end - idx_start < 2)
+	{
+		printf("Memory layout is flawed: too many nodes allocated");
+		b->node_data[i_node].is_leaf = TRUE;
+	}
+	else
+	{
+		b->node_data[i_node].is_leaf = FALSE;
+		i_max = find_node_split_dim(b->data, b->idx_array, n_features, n_points);
+		partition_node_indices(b->data, b->idx_array, i_max, n_mid, n_features, n_points);
+		recursive_build(b, 2 * i_node + 1, idx_start, idx_start + n_mid);
+		recursive_build(b, 2 * i_node + 2, idx_start + n_mid, idx_end);
+	}
+}
+
 t_btree	*btree_init(double **data, int leaf_size)
 {
 	t_btree	*b;
@@ -107,10 +238,11 @@ t_btree	*btree_init(double **data, int leaf_size)
 		for (j = 0; j < b->n_features; j++)
 			b->node_bounds[0][i][j] = 0.0;
 	}
-	recursive_build(0, 0, b->n_samples);
+	recursive_build(b, 0, 0, b->n_samples);
 	return (b);
 }
 
-int		*query(t_binarytree *tree, double *x, int k)
+int		*btree_query(t_btree *tree, double *x, int k)
 {
+
 }

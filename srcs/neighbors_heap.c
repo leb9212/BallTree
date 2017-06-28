@@ -1,23 +1,23 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   heap.c                                             :+:      :+:    :+:   */
+/*   neighbors_heap.c                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: elee <elee@student.42.us.org>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/28 10:45:06 by elee              #+#    #+#             */
-/*   Updated: 2017/06/28 11:31:40 by elee             ###   ########.fr       */
+/*   Updated: 2017/06/28 13:14:17 by elee             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ball.h"
 
-t_heap	heap_init(int n_pts, int n_nbrs)
+t_nheap	heap_init(int n_pts, int n_nbrs)
 {
-	t_heap	h;
+	t_nheap	h;
 	int		i, j;
 
-	h = (t_heap*)malloc(sizeof(t_heap));
+	h = (t_nheap*)malloc(sizeof(t_nheap));
 	h->n_pts = n_pts;
 	h->n_nbrs = n_nbrs;
 	h->distances = (double**)malloc(sizeof(double*) * n_pts);
@@ -33,12 +33,12 @@ t_heap	heap_init(int n_pts, int n_nbrs)
 	return (h);
 }
 
-double	heap_largest(t_heap *h, int row)
+double	heap_largest(t_nheap *h, int row)
 {
 	return (h->distances[row][0]);
 }
 
-int		heap_push(t_heap *h, int row, double val, int i_val)
+int		heap_push(t_nheap *h, int row, double val, int i_val)
 {
 	int		i, ic1, ic2, i_swap;
 	int		size;
@@ -128,7 +128,7 @@ double	**copy_int(int **arr, int row, int col)
 	return (copy);
 }
 
-t_knn	get_arrays(t_heap *h)
+t_knn	get_arrays(t_nheap *h)
 {
 	t_knn	output;
 

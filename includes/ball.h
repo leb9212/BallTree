@@ -6,7 +6,7 @@
 /*   By: elee <elee@student.42.us.org>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/28 10:55:27 by elee              #+#    #+#             */
-/*   Updated: 2017/06/28 12:12:13 by elee             ###   ########.fr       */
+/*   Updated: 2017/06/28 13:14:05 by elee             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,13 +23,13 @@
 # define TRUE 1
 # define FALSE 0
 
-typedef struct	s_heap
+typedef struct	s_nheap
 {
 	double		**distances;
 	int			**indices;
 	int			n_pts;
 	int			n_nbrs;
-}				t_heap;
+}				t_nheap;
 
 typedef struct	s_knn
 {
@@ -48,7 +48,7 @@ typedef	struct	s_nodedata
 typedef struct	s_btree
 {
 	double		**data;
-	int			**idx_array;
+	int			*idx_array;
 	t_nodedata	node_data;
 	double		*node_bounds;
 

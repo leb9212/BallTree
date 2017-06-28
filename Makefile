@@ -6,7 +6,7 @@
 #    By: elee <elee@student.42.us.org>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2017/06/28 10:43:56 by elee              #+#    #+#              #
-#    Updated: 2017/06/28 10:44:35 by elee             ###   ########.fr        #
+#    Updated: 2017/06/28 13:22:46 by elee             ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -16,7 +16,7 @@ CC = gcc
 
 CFLAGS = -Wall -Wextra -Werror
 
-SRCS = 
+SRCS = ball.c metrics.c neighbors_heap.c 
 
 OBJS = $(SRCS:.c=.o)
 
