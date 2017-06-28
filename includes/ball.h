@@ -6,7 +6,7 @@
 /*   By: elee <elee@student.42.us.org>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/28 10:55:27 by elee              #+#    #+#             */
-/*   Updated: 2017/06/28 13:14:05 by elee             ###   ########.fr       */
+/*   Updated: 2017/06/28 14:46:51 by elee             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,8 +49,8 @@ typedef struct	s_btree
 {
 	double		**data;
 	int			*idx_array;
-	t_nodedata	node_data;
-	double		*node_bounds;
+	t_nodedata	*node_data;
+	double		***node_bounds;
 
 	int			n_samples;
 	int			n_features;
@@ -66,6 +66,26 @@ typedef struct	s_btree
 }				t_btree;
 
 
-double	manhattan_dist(double *x1, double *x2, int size);
+/*
+** metrics.c
+*/
 
+double	manhattan_dist(double *x1, double *x2, int size);
+double	min_dist(t_btree *tree, int i_node, double *pt);
+
+/*
+** neighbors_heap.c
+*/
+
+t_nheap	*nheap_init(int n_pts, int n_nbrs);
+double	nheap_largest(t_nheap *h, int row);
+int		nheap_push(t_nheap *h, int row, double val, int i_val);
+t_knn	nheap_get_arrays(t_nheap *h);
+
+/*
+** ball.c
+*/
+
+t_btree	*btree_init(double **data, int leaf_size);
+t_knn	btree_query(t_btree *b, double **x, int k);
 #endif

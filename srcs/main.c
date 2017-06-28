@@ -1,30 +1,15 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   metrics.c                                          :+:      :+:    :+:   */
+/*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: elee <elee@student.42.us.org>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2017/06/28 10:45:32 by elee              #+#    #+#             */
-/*   Updated: 2017/06/28 14:28:33 by elee             ###   ########.fr       */
+/*   Created: 2017/06/28 14:49:03 by elee              #+#    #+#             */
+/*   Updated: 2017/06/28 14:49:10 by elee             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "ball.h"
-
-double	manhattan_dist(double *x1, double *x2, int size)
+int		main(void)
 {
-	double	d = 0;
-
-	for (int i = 0; i < size; i++)
-		d += fabs(x1[i] - x2[i]);
-	return (d);
-}
-
-double	min_dist(t_btree *tree, int i_node, double *pt)
-{
-	double	dist_pt;
-
-	dist_pt = manhattan_dist(pt, tree->node_bounds[0][i_node], tree->n_features);
-	return (fmax(0, dist_pt - tree->node_data[i_node].radius));
 }

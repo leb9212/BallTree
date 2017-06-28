@@ -6,15 +6,15 @@
 /*   By: elee <elee@student.42.us.org>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/28 10:45:06 by elee              #+#    #+#             */
-/*   Updated: 2017/06/28 13:14:17 by elee             ###   ########.fr       */
+/*   Updated: 2017/06/28 14:48:43 by elee             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ball.h"
 
-t_nheap	heap_init(int n_pts, int n_nbrs)
+t_nheap	*nheap_init(int n_pts, int n_nbrs)
 {
-	t_nheap	h;
+	t_nheap	*h;
 	int		i, j;
 
 	h = (t_nheap*)malloc(sizeof(t_nheap));
@@ -23,27 +23,27 @@ t_nheap	heap_init(int n_pts, int n_nbrs)
 	h->distances = (double**)malloc(sizeof(double*) * n_pts);
 	for (i = 0; i < n_pts; i++)
 	{
-		distances[i] = (double*)malloc(sizeof(double) * n_nbrs);
+		h->distances[i] = (double*)malloc(sizeof(double) * n_nbrs);
 		for (j = 0; j < n_nbrs; j++)
-			distances[i][j] = INFINITY;
+			h->distances[i][j] = INFINITY;
 	}
 	h->indices = (int**)malloc(sizeof(int*) * n_pts);
-	for (int i = 0; i < n_pts; i++)
-		indices[i] = (int*)calloc(sizeof(int), n_nbrs);
+	for (i = 0; i < n_pts; i++)
+		h->indices[i] = (int*)calloc(sizeof(int), n_nbrs);
 	return (h);
 }
 
-double	heap_largest(t_nheap *h, int row)
+double	nheap_largest(t_nheap *h, int row)
 {
 	return (h->distances[row][0]);
 }
 
-int		heap_push(t_nheap *h, int row, double val, int i_val)
+int		nheap_push(t_nheap *h, int row, double val, int i_val)
 {
 	int		i, ic1, ic2, i_swap;
 	int		size;
 	double	*dist_arr;
-	double	*ind_arr;
+	int		*ind_arr;
 
 	size = h->n_nbrs;
 	dist_arr = h->distances[row];
@@ -113,7 +113,7 @@ double	**copy_double(double **arr, int row, int col)
 	return (copy);
 }
 
-double	**copy_int(int **arr, int row, int col)
+int		**copy_int(int **arr, int row, int col)
 {
 	int		**copy;
 	int		i, j;
@@ -128,7 +128,7 @@ double	**copy_int(int **arr, int row, int col)
 	return (copy);
 }
 
-t_knn	get_arrays(t_nheap *h)
+t_knn	nheap_get_arrays(t_nheap *h)
 {
 	t_knn	output;
 

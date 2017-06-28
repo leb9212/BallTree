@@ -6,30 +6,19 @@
 /*   By: elee <elee@student.42.us.org>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/28 10:45:02 by elee              #+#    #+#             */
-/*   Updated: 2017/06/28 13:28:57 by elee             ###   ########.fr       */
+/*   Updated: 2017/06/28 14:46:14 by elee             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-void	swap(double *arr, int i1, int i2)
+#include "ball.h"
+
+void	swap(int *arr, int i1, int i2)
 {
-	double	tmp;
+	int	tmp;
 	
 	tmp = arr[i1];
 	arr[i1] = arr[i2];
 	arr[i2] = tmp;
-}
-
-void	dual_swap(double *darr, int *iarr, int i1, int i2)
-{
-	double	dtmp;
-	int		itmp;
-
-	dtmp = darr[i1];
-	darr[i1] = darr[i2];
-	darr[i2] = dtmp;
-	itmp = iarr[i1];
-	iarr[i1] = iarr[i2];
-	iarr[i2] = itmp;
 }
 
 int		arr_2d_len(double **arr)
@@ -71,18 +60,14 @@ void	btree_zero(t_btree *b)
 
 int		init_node(t_btree *b, int i_node, int idx_start, int idx_end)
 {
-	int		n_features
+	int		n_features;
 	int		n_points;
-	
 	int		i, j;
 	double	radius;
-
 	double	*centroid;
 
 	n_features = b->n_features;
 	n_points = idx_end - idx_start;
-	
-	data = b->data[0];
 	centroid = b->node_bounds[0][i_node];
 
 	for (j = 0; j < n_features; j++)
@@ -97,11 +82,11 @@ int		init_node(t_btree *b, int i_node, int idx_start, int idx_end)
 
 	radius = 0.0;
 	for (i = idx_start; i < idx_end; i++)
-		radius = fmax(radius, manhattan_dist(centroid, b->data[i], n_features);
+		radius = fmax(radius, manhattan_dist(centroid, b->data[i], n_features));
 
 	b->node_data[i_node].radius = radius;
-	b->node_data.idx_start = idx_start;
-	b->node_data.idx_end = idx_end;
+	b->node_data[i_node].idx_start = idx_start;
+	b->node_data[i_node].idx_end = idx_end;
 	return (0);
 }
 
@@ -150,7 +135,7 @@ int		partition_node_indices(double **data, int *node_indices, int split_dim, int
 			d2 = data[node_indices[right]][split_dim];
 			if (d1 < d2)
 			{
-				swap(node_indices, i, midindex)
+				swap(node_indices, i, midindex);
 				midindex += 1;
 			}
 		}
@@ -193,8 +178,8 @@ int		recursive_build(t_btree *b, int i_node, int idx_start, int idx_end)
 	else
 	{
 		b->node_data[i_node].is_leaf = FALSE;
-		i_max = find_node_split_dim(b->data, b->idx_array, n_features, n_points);
-		partition_node_indices(b->data, b->idx_array, i_max, n_mid, n_features, n_points);
+		imax = find_node_split_dim(b->data, b->idx_array, n_features, n_points);
+		partition_node_indices(b->data, b->idx_array, imax, n_mid, n_features, n_points);
 		recursive_build(b, 2 * i_node + 1, idx_start, idx_start + n_mid);
 		recursive_build(b, 2 * i_node + 2, idx_start + n_mid, idx_end);
 	}
@@ -242,7 +227,78 @@ t_btree	*btree_init(double **data, int leaf_size)
 	return (b);
 }
 
-int		*btree_query(t_btree *tree, double *x, int k)
+int		query_depth_first(t_btree *b, int i_node, double *pt, int i_pt, t_nheap *heap, double dist)
 {
+	t_nodedata	node_info = b->node_data[i_node];
+	double		dist_pt, dist1, dist2;
+	int			i, i1, i2;
 
+	//case 1: query point is outside node radius: trim it from the query
+	if (dist > nheap_largest(heap, i_pt))
+	{
+		b->n_trims += 1;
+	}
+	//case 2: this is a leaf node. Update set of nearby points
+	else if (node_info.is_leaf)
+	{
+		b->n_leaves += 1;
+		for (i = node_info.idx_start; i < node_info.idx_end; i++)
+		{
+			dist_pt = manhattan_dist(pt, b->data[b->idx_array[i]], b->n_features);
+			if (dist_pt < nheap_largest(heap, i_pt))
+				nheap_push(heap, i_pt, dist_pt, b->idx_array[i]);
+		}
+	}
+	//case 3: Node is not a leaf, Recursively query sub-nodes starting with the closest
+	else
+	{
+		b->n_splits += 1;
+		i1 = 2 * i_node +1;
+		i2 = i1 +1;
+		dist1 = min_dist(b, i1, pt); //implement min_rdist
+		dist2 = min_dist(b, i2, pt);
+		if (dist1 <= dist2)
+		{
+			query_depth_first(b, i1, pt, i_pt, heap, dist1);
+			query_depth_first(b, i2, pt, i_pt, heap, dist2);
+		}
+		else
+		{
+			query_depth_first(b, i2, pt, i_pt, heap, dist2);
+			query_depth_first(b, i1, pt, i_pt, heap, dist1);
+		}
+	}
+	return (0);
+}
+
+t_knn	btree_query(t_btree *b, double **x, int k)
+{
+	t_nheap	*heap;
+	double	dist;
+	int		i;
+	int		n_points, n_features;
+	t_knn	output;
+
+	n_points = arr_2d_len(x);
+	for (i = 0; i < n_points; i++)
+	{
+		if ((n_features = arr_1d_len(x[i])) != b->n_features)\
+		{
+			printf("Query data dimension must match training data dimension.\n");
+			exit(-1);
+		}
+	}
+	if (b->n_samples < k)
+	{
+		printf("k must be less than or equal to the number of training points.\n");
+		exit(-1);
+	}
+	heap = nheap_init(n_points, k);
+	for (i = 0; i < n_points; i++)
+	{
+		dist = min_dist(b, 0, x[i]);
+		query_depth_first(b, 0, x[i], i, heap, dist);
+	}
+	output = nheap_get_arrays(heap);
+	return (output);
 }
