@@ -6,7 +6,7 @@
 /*   By: elee <elee@student.42.us.org>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/28 10:55:27 by elee              #+#    #+#             */
-/*   Updated: 2017/06/28 17:44:01 by elee             ###   ########.fr       */
+/*   Updated: 2017/06/28 18:41:03 by elee             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@
 # include <math.h>
 # include <float.h>
 # include <sys/stat.h>
+# include <time.h>
 
 # define TRUE 1
 # define FALSE 0
@@ -98,4 +99,9 @@ t_knn	nheap_get_arrays(t_nheap *h);
 
 t_btree	*btree_init(double **data, int n_samples, int n_features, int leaf_size);
 t_knn	btree_query(t_btree *b, double **x, int n_samples, int n_features, int k);
+void	free_2d_double(double **arr, int row);
+void	free_2d_int(int **arr, int row);
+void	free_tree(t_btree *tree);
+void	free_knn(t_knn knn, int row);
+
 #endif

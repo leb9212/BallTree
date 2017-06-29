@@ -6,7 +6,7 @@
 /*   By: elee <elee@student.42.us.org>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/28 10:45:02 by elee              #+#    #+#             */
-/*   Updated: 2017/06/28 17:19:57 by elee             ###   ########.fr       */
+/*   Updated: 2017/06/28 18:37:56 by elee             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -274,4 +274,38 @@ t_knn	btree_query(t_btree *b, double **x, int n_samples, int n_features, int k)
 	}
 	output = nheap_get_arrays(heap);
 	return (output);
+}
+
+void	free_2d_double(double **arr, int row)
+{
+	int	i;
+
+	for (i = 0; i < row; i++)
+		free(arr[i]);
+	free(arr);
+}
+
+void	free_2d_int(int **arr, int row)
+{
+	int	i;
+
+	for (i = 0; i < row; i++)
+		free(arr[i]);
+	free(arr);
+}
+
+void	free_tree(t_btree *tree)
+{
+	free_2d_double(tree->data, tree->n_samples);
+	free(tree->idx_array);
+	free(tree->node_data);
+	free_2d_double(tree->node_bounds[0], tree->n_nodes);
+	free(tree->node_bounds);
+	
+}
+
+void	free_knn(t_knn knn, int row)
+{
+	free_2d_double(knn.distances, row);
+	free_2d_int(knn.indices, row);
 }

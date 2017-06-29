@@ -6,7 +6,7 @@
 /*   By: elee <elee@student.42.us.org>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/28 10:45:06 by elee              #+#    #+#             */
-/*   Updated: 2017/06/28 17:21:30 by elee             ###   ########.fr       */
+/*   Updated: 2017/06/28 18:16:57 by elee             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -173,42 +173,13 @@ void	nheap_sort(t_nheap *h)
 		simultaneous_sort(h->distances[row], h->indices[row], h->n_nbrs);
 }
 
-double	**copy_double(double **arr, int row, int col)
-{
-	double	**copy;
-	int		i, j;
-
-	copy = (double**)malloc(sizeof(double*) * row);
-	for (i = 0; i < row; i++)
-	{
-		copy[i] = (double*)malloc(sizeof(double) * col);
-		for (j = 0; j < col; j++)
-			copy[i][j] = arr[i][j];
-	}
-	return (copy);
-}
-
-int		**copy_int(int **arr, int row, int col)
-{
-	int		**copy;
-	int		i, j;
-
-	copy = (int**)malloc(sizeof(int*) * row);
-	for (i = 0; i < row; i++)
-	{
-		copy[i] = (int*)malloc(sizeof(int) * col);
-		for (j = 0; j < col; j++)
-			copy[i][j] = arr[i][j];
-	}
-	return (copy);
-}
-
 t_knn	nheap_get_arrays(t_nheap *h)
 {
 	t_knn	output;
 	
 	nheap_sort(h);
-	output.distances = copy_double(h->distances, h->n_pts, h->n_nbrs);
-	output.indices = copy_int(h->indices, h->n_pts, h->n_nbrs);
+	output.distances = h->distances;
+	output.indices = h->indices;
+	free(h);
 	return (output);
 }
