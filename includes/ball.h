@@ -6,7 +6,7 @@
 /*   By: elee <elee@student.42.us.org>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/28 10:55:27 by elee              #+#    #+#             */
-/*   Updated: 2017/06/28 17:20:17 by elee             ###   ########.fr       */
+/*   Updated: 2017/06/28 17:44:01 by elee             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,9 +19,19 @@
 # include <limits.h>
 # include <math.h>
 # include <float.h>
+# include <sys/stat.h>
 
 # define TRUE 1
 # define FALSE 0
+
+typedef struct	s_data
+{
+	int			n_neighbors;
+	int			leaf_size;
+	double		**data;
+	int			n_samples;
+	int			n_features;
+}				t_data;
 
 typedef struct	s_nheap
 {
