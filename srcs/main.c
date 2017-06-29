@@ -6,27 +6,22 @@
 /*   By: elee <elee@student.42.us.org>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/28 17:45:08 by elee              #+#    #+#             */
-/*   Updated: 2017/06/28 19:00:51 by elee             ###   ########.fr       */
+/*   Updated: 2017/06/28 21:23:39 by elee             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ball.h"
 #include "json.h"
 
-static void process_value(t_data *data, json_value* value);
-
-static void process_object(t_data *data, json_value* value)
+void	process_object(t_data *data, json_value* value)
 {
-	int length;
-	int x;
-	int y;
+	int	length;
+	int	x;
+	int	y;
 	int z;
 	char *name;
 	json_value *temp;
 
-	(void)temp;
-	(void)z;
-	(void)y;
 	if (value == NULL)
 		return;
 	length = value->u.object.length;
@@ -37,40 +32,27 @@ static void process_object(t_data *data, json_value* value)
 			data->n_neighbors = value->u.object.values[x].value->u.integer;
 		else if (!strcmp(name, "leaf_size"))
 			data->leaf_size = value->u.object.values[x].value->u.integer;
-		else if (!strcmp(name, "_tree"))
+		else if (!strcmp(name, "_tree") || !strcmp(name, "_test"))
 		{
-			/*
-			temp = value->u.object.values[x].value->u.object.values[1].value;
-			int y_len = temp->u.array.length;
-			data->data = (double**)malloc(sizeof(double*) * y_len);
-			for (y = 0; y < y_len; y++)
+			if (!strcmp(name, "_tree"))
+				temp = value->u.object.values[x].value->u.object.values[1].value;
+			else
+				temp = value->u.object.values[x].value;
+			data->n_samples = temp->u.array.length;
+			data->data = (double**)malloc(sizeof(double*) * data->n_samples);
+			for (y =0; y < data->n_samples; y++)
 			{
-				int z_len = temp->u.array.values[y].value->u.array.length;
-				data->data[y] = (double*)malloc(sizeof(double) * z_len);
-				for (z = 0; z < z_len; z++)
-					data->data[y][z] = temp->u.array.values[y].value->u.array.values[z].value->u.dbl;
+				data->n_features = temp->u.array.values[y]->u.array.length;
+				data->data[y] = (double*)malloc(sizeof(double) * data->n_features);
+				for (z = 0; z < data->n_features; z++)
+					data->data[y][z] = temp->u.array.values[y]->u.array.values[z]->u.dbl;
 			}
-			*/
 		}
-		// process_value(data, value->u.object.values[x].value);
 		free(name);
 	}
 }
 
-static void process_array(t_data *data, json_value* value)
-{
-	int length;
-	int x;
-
-	if (value == NULL)
-		return;
-	length = value->u.array.length;
-	// printf("array length is %d\n", length);
-	for (x = 0; x < length; x++)
-		process_value(data, value->u.array.values[x]);
-}
-
-static void process_value(t_data *data, json_value* value)
+void	process_value(t_data *data, json_value* value)
 {
 	int j;
 	(void)j;
@@ -84,16 +66,12 @@ static void process_value(t_data *data, json_value* value)
 			process_object(data, value);
 			break;
 		case json_array:
-			process_array(data, value);
 			break;
 		case json_integer:
-			// printf("int: %10" PRId64 "\n", value->u.integer);
 			break;
 		case json_double:
-			// printf("double: %f\n", value->u.dbl);
 			break;
 		case json_string:
-			// printf("string: %s\n", value->u.string.ptr);
 			break;
 		case json_boolean:
 			break;
@@ -169,9 +147,9 @@ t_data	*read_test_data(char *filename)
 		fprintf(stderr, "File %s not found\n", filename);
 		exit(-1);
 	}
-	file_size = filestatus.st_size + 8;
+	file_size = filestatus.st_size + 12;
 	file_contents = (char*)malloc(sizeof(char) * file_size);
-	memcpy(file_contents, "{\"X\": ", 6);
+	memcpy(file_contents, "{\"_test\": ", 10);
 	if (file_contents == NULL)
 	{
 		fprintf(stderr, "Memory error: unable to allocate %d bytes\n", file_size);
@@ -184,7 +162,7 @@ t_data	*read_test_data(char *filename)
 		free(file_contents);
 		exit(-1);
 	}
-	if (fread(file_contents + 6, file_size - 8, 1, fp) != 1 ) {
+	if (fread(file_contents + 10, file_size - 12, 1, fp) != 1 ) {
 		fprintf(stderr, "Unable to read content of %s\n", filename);
 		fclose(fp);
 		free(file_contents);
@@ -193,7 +171,7 @@ t_data	*read_test_data(char *filename)
 	fclose(fp);
 	file_contents[file_size - 2] = '}';
 	file_contents[file_size - 1] = '\0';
-
+	
 	json = (json_char*)file_contents;
 	value = json_parse(json, file_size);
 	if (value == NULL)
@@ -209,6 +187,43 @@ t_data	*read_test_data(char *filename)
 	return (data);
 }
 
+void	write_output(t_knn knn, char *filename)
+{
+	FILE	*fp;
+	int		i, j;
+
+	fp = fopen(filename, "w");
+	if (fp == NULL)
+	{
+		fprintf(stderr, "Unable to create %s\n", filename);
+		exit(-1);
+	}
+	
+	fprintf(fp, "[");
+	for (i = 0; i < knn.n_samples; i++)
+	{
+		fprintf(fp, "{\"knn_idx\": [");
+		for (j = 0; j < knn.n_neighbors; j++)
+		{
+			fprintf(fp, "%d", knn.indices[i][j]);
+			if (j != knn.n_neighbors - 1)
+				fprintf(fp, ", ");
+		}
+		fprintf(fp, "], \"knn_dist\": [");
+		for (j = 0; j < knn.n_neighbors; j++)
+		{
+			fprintf(fp, "%.12lf", knn.distances[i][j]);
+			if (j != knn.n_neighbors - 1)
+				fprintf(fp, ", ");
+		}
+		fprintf(fp, "]}");
+		if (i != knn.n_samples - 1)
+			fprintf(fp, ", ");
+	}
+	fprintf(fp, "]");
+	fclose(fp);
+}
+
 t_btree	*btree_init_wrapper(t_data *input_data)
 {
 	return (btree_init(input_data->data, input_data->n_samples, input_data->n_features, input_data->leaf_size));
@@ -217,11 +232,6 @@ t_btree	*btree_init_wrapper(t_data *input_data)
 t_knn	btree_query_wrapper(t_btree *tree, t_data *input_data, t_data *test_data)
 {
 	return (btree_query(tree, test_data->data, test_data->n_samples, test_data->n_features, input_data->n_neighbors)); 
-}
-
-void	write_output(t_knn knn, char *filename)
-{
-
 }
 
 void	free_data(t_data *input_data, t_data *test_data)
@@ -242,7 +252,7 @@ int		main(int argc, char **argv)
 
 	if (argc != 4)
 	{
-		fprintf(stderr, "%s <input_json_file> <test_data_file> <path_to_output>\n", argv[0]);
+		fprintf(stderr, "%s <input param json file> <test data file> <path_to_output>\n", argv[0]);
 		exit(-1);
 	}
 

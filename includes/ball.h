@@ -6,7 +6,7 @@
 /*   By: elee <elee@student.42.us.org>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/28 10:55:27 by elee              #+#    #+#             */
-/*   Updated: 2017/06/28 18:41:03 by elee             ###   ########.fr       */
+/*   Updated: 2017/06/28 20:56:18 by elee             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,6 +46,8 @@ typedef struct	s_knn
 {
 	double		**distances;
 	int			**indices;
+	int			n_samples;
+	int			n_neighbors;
 }				t_knn;
 
 typedef	struct	s_nodedata
@@ -69,11 +71,6 @@ typedef struct	s_btree
 	int			leaf_size;
 	int			n_levels;
 	int			n_nodes;
-
-	int			n_trims;
-	int			n_leaves;
-	int			n_splits;
-	int			n_calls;
 }				t_btree;
 
 

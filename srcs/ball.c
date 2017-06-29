@@ -6,11 +6,26 @@
 /*   By: elee <elee@student.42.us.org>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/28 10:45:02 by elee              #+#    #+#             */
-/*   Updated: 2017/06/28 18:37:56 by elee             ###   ########.fr       */
+/*   Updated: 2017/06/28 20:56:01 by elee             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ball.h"
+
+double	**copy_double_arr(double **arr, int row, int col)
+{
+	double	**copy;
+	int		i, j;
+	
+	copy = (double**)malloc(sizeof(double*) * row);
+	for (i = 0; i < row; i++)
+	{
+		copy[i] = (double*)malloc(sizeof(double) * col);
+		for (j = 0; j < col; j++)
+			copy[i][j] = arr[i][j];
+	}
+	return (copy);
+}
 
 void	swap(int *arr, int i1, int i2)
 {
@@ -31,11 +46,6 @@ void	btree_zero(t_btree *b)
 	b->leaf_size = 40;
 	b->n_levels = 0;
 	b->n_nodes = 0;
-
-	b->n_trims = 0;
-	b->n_leaves = 0;
-	b->n_splits = 0;
-	b->n_calls = 0;
 }
 
 int		init_node(t_btree *b, int i_node, int idx_start, int idx_end)
@@ -174,7 +184,7 @@ t_btree	*btree_init(double **data, int n_samples, int n_features, int leaf_size)
 	b = (t_btree*)malloc(sizeof(t_btree));
 	btree_zero(b);
 
-	b->data = data;
+	b->data = copy_double_arr(data, n_samples, n_features);
 	b->leaf_size = leaf_size;
 	
 	if (leaf_size < 1)
@@ -214,12 +224,11 @@ int		query_depth_first(t_btree *b, int i_node, double *pt, int i_pt, t_nheap *he
 	//case 1: query point is outside node radius: trim it from the query
 	if (dist > nheap_largest(heap, i_pt))
 	{
-		b->n_trims += 1;
+		;
 	}
 	//case 2: this is a leaf node. Update set of nearby points
 	else if (node_info.is_leaf)
 	{
-		b->n_leaves += 1;
 		for (i = node_info.idx_start; i < node_info.idx_end; i++)
 		{
 			dist_pt = manhattan_dist(pt, b->data[b->idx_array[i]], b->n_features);
@@ -230,7 +239,6 @@ int		query_depth_first(t_btree *b, int i_node, double *pt, int i_pt, t_nheap *he
 	//case 3: Node is not a leaf, Recursively query sub-nodes starting with the closest
 	else
 	{
-		b->n_splits += 1;
 		i1 = 2 * i_node +1;
 		i2 = i1 +1;
 		dist1 = min_dist(b, i1, pt); //implement min_rdist
@@ -301,7 +309,7 @@ void	free_tree(t_btree *tree)
 	free(tree->node_data);
 	free_2d_double(tree->node_bounds[0], tree->n_nodes);
 	free(tree->node_bounds);
-	
+	free(tree);
 }
 
 void	free_knn(t_knn knn, int row)

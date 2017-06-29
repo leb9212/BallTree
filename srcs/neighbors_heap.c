@@ -6,7 +6,7 @@
 /*   By: elee <elee@student.42.us.org>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/28 10:45:06 by elee              #+#    #+#             */
-/*   Updated: 2017/06/28 18:16:57 by elee             ###   ########.fr       */
+/*   Updated: 2017/06/28 20:17:58 by elee             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -180,6 +180,8 @@ t_knn	nheap_get_arrays(t_nheap *h)
 	nheap_sort(h);
 	output.distances = h->distances;
 	output.indices = h->indices;
+	output.n_samples = h->n_pts;
+	output.n_neighbors = h->n_nbrs;
 	free(h);
 	return (output);
 }
