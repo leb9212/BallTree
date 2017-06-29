@@ -27,3 +27,9 @@ Building 10k points of 512 dimensions with leaf size 30 took about 1.23s.
 Querying the 3 nearest neighbors of 20 points of 512 dimensions took about 0.58s.
 
 To compare the results from scikit-learn and this program, compare files prefix starting with knn_results (scikit-learn) with my_knn_results (this program)
+
+To do list:
+
+1. implement other distance metrics
+2. implement breadth_first_search query
+3. implement dual_tree query
