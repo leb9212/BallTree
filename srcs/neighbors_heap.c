@@ -6,11 +6,24 @@
 /*   By: elee <elee@student.42.us.org>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/28 10:45:06 by elee              #+#    #+#             */
-/*   Updated: 2017/06/28 14:48:43 by elee             ###   ########.fr       */
+/*   Updated: 2017/06/28 17:21:30 by elee             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ball.h"
+
+void	dual_swap(double *darr, int *iarr, int i1, int i2)
+{
+	double	dtmp;
+	int		itmp;
+
+	dtmp = darr[i1];
+	darr[i1] = darr[i2];
+	darr[i2] = dtmp;
+	itmp = iarr[i1];
+	iarr[i1] = iarr[i2];
+	iarr[i2] = itmp;
+}
 
 t_nheap	*nheap_init(int n_pts, int n_nbrs)
 {
@@ -68,7 +81,7 @@ int		nheap_push(t_nheap *h, int row, double val, int i_val)
 			break ;
 		else if (ic2 >= size)
 		{
-			if (dist_arr[ic2] > val)
+			if (dist_arr[ic1] > val)
 				i_swap = ic1;
 			else
 				break ;
@@ -96,6 +109,68 @@ int		nheap_push(t_nheap *h, int row, double val, int i_val)
 	ind_arr[i] = i_val;
 
 	return (0);
+}
+
+void	simultaneous_sort(double *dist, int *idx, int size)
+{
+	int		pivot_idx, i, store_idx;
+	double	pivot_val;
+
+	if (size <= 1)
+		;
+	else if (size == 2)
+	{
+		if (dist[0] > dist[1])
+			dual_swap(dist, idx, 0, 1);
+	}
+	else if (size == 3)
+	{
+		if (dist[0] > dist[1])
+			dual_swap(dist, idx, 0, 1);
+		if (dist[1] > dist[2])
+		{
+			dual_swap(dist, idx, 1, 2);
+			if (dist[0] > dist[1])
+				dual_swap(dist, idx, 0, 1);
+		}
+	}
+	else
+	{
+		pivot_idx = size / 2;
+		if (dist[0] > dist[size - 1])
+			dual_swap(dist, idx, 0, size - 1);
+		if (dist[size - 1] > dist[pivot_idx])
+		{
+			dual_swap(dist, idx, size - 1, pivot_idx);
+			if (dist[0] > dist[size - 1])
+				dual_swap(dist, idx, 0, size - 1);
+		}
+		pivot_val = dist[size - 1];
+
+		store_idx = 0;
+		for (i = 0; i < size - 1; i++)
+		{
+			if (dist[i] < pivot_val)
+			{
+				dual_swap(dist, idx, i, store_idx);
+				store_idx++;
+			}
+		}
+		dual_swap(dist, idx, store_idx, size - 1);
+		pivot_idx = store_idx;
+		if (pivot_idx > 1)
+			simultaneous_sort(dist, idx, pivot_idx);
+		if (pivot_idx * 2 < size)
+			simultaneous_sort(dist + pivot_idx + 1, idx + pivot_idx + 1, size - pivot_idx - 1);
+	}
+}
+
+void	nheap_sort(t_nheap *h)
+{
+	int	row;
+
+	for (row = 0; row < h->n_pts; row++)
+		simultaneous_sort(h->distances[row], h->indices[row], h->n_nbrs);
 }
 
 double	**copy_double(double **arr, int row, int col)
@@ -131,7 +206,8 @@ int		**copy_int(int **arr, int row, int col)
 t_knn	nheap_get_arrays(t_nheap *h)
 {
 	t_knn	output;
-
+	
+	nheap_sort(h);
 	output.distances = copy_double(h->distances, h->n_pts, h->n_nbrs);
 	output.indices = copy_int(h->indices, h->n_pts, h->n_nbrs);
 	return (output);

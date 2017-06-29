@@ -6,7 +6,7 @@
 #    By: elee <elee@student.42.us.org>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2017/06/28 10:43:56 by elee              #+#    #+#              #
-#    Updated: 2017/06/28 13:22:46 by elee             ###   ########.fr        #
+#    Updated: 2017/06/28 15:06:39 by elee             ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -16,7 +16,7 @@ CC = gcc
 
 CFLAGS = -Wall -Wextra -Werror
 
-SRCS = ball.c metrics.c neighbors_heap.c 
+SRCS = ball.c metrics.c neighbors_heap.c main.c
 
 OBJS = $(SRCS:.c=.o)
 
@@ -28,7 +28,7 @@ $(NAME):
 	mkdir -p build/
 	$(CC) $(CFLAGS) -c $(addprefix srcs/, $(SRCS)) -I$(INCS)
 	mv $(OBJS) build/
-	gcc $(addprefix build/, $(OBJS)) -o $(NAME)
+	gcc $(addprefix build/, $(OBJS)) -o $(NAME) -lm
 
 clean:
 	/bin/rm -rf build

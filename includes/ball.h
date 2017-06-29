@@ -6,7 +6,7 @@
 /*   By: elee <elee@student.42.us.org>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/28 10:55:27 by elee              #+#    #+#             */
-/*   Updated: 2017/06/28 14:46:51 by elee             ###   ########.fr       */
+/*   Updated: 2017/06/28 17:20:17 by elee             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,6 +86,6 @@ t_knn	nheap_get_arrays(t_nheap *h);
 ** ball.c
 */
 
-t_btree	*btree_init(double **data, int leaf_size);
-t_knn	btree_query(t_btree *b, double **x, int k);
+t_btree	*btree_init(double **data, int n_samples, int n_features, int leaf_size);
+t_knn	btree_query(t_btree *b, double **x, int n_samples, int n_features, int k);
 #endif

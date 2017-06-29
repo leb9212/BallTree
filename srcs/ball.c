@@ -6,7 +6,7 @@
 /*   By: elee <elee@student.42.us.org>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/28 10:45:02 by elee              #+#    #+#             */
-/*   Updated: 2017/06/28 14:46:14 by elee             ###   ########.fr       */
+/*   Updated: 2017/06/28 17:19:57 by elee             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,26 +21,6 @@ void	swap(int *arr, int i1, int i2)
 	arr[i2] = tmp;
 }
 
-int		arr_2d_len(double **arr)
-{
-	int	len;
-
-	len = 0;
-	while (arr[len] != NULL)
-		len++;
-	return (len);
-}
-
-int		arr_1d_len(double *arr)
-{
-	int	len;
-
-	len = 0;
-	while (arr[len] != NAN)
-		len++;
-	return (len);
-}
-
 void	btree_zero(t_btree *b)
 {
 	b->data = NULL;
@@ -48,7 +28,7 @@ void	btree_zero(t_btree *b)
 	b->node_data = NULL;
 	b->node_bounds = NULL;
 
-	b->leaf_size = 0;
+	b->leaf_size = 40;
 	b->n_levels = 0;
 	b->n_nodes = 0;
 
@@ -69,20 +49,20 @@ int		init_node(t_btree *b, int i_node, int idx_start, int idx_end)
 	n_features = b->n_features;
 	n_points = idx_end - idx_start;
 	centroid = b->node_bounds[0][i_node];
-
+	
 	for (j = 0; j < n_features; j++)
 		centroid[j] = 0.0;
-
+	
 	for (i = idx_start; i < idx_end; i++)
-		for (j = 0 ; j < n_features; j++)
-			centroid[j] += b->data[i][j];
+		for (j = 0; j < n_features; j++)
+			centroid[j] += b->data[b->idx_array[i]][j];
 
 	for (j = 0; j < n_features; j++)
 		centroid[j] /= n_points;
 
 	radius = 0.0;
 	for (i = idx_start; i < idx_end; i++)
-		radius = fmax(radius, manhattan_dist(centroid, b->data[i], n_features));
+		radius = fmax(radius, manhattan_dist(centroid, b->data[b->idx_array[i]], n_features));
 
 	b->node_data[i_node].radius = radius;
 	b->node_data[i_node].idx_start = idx_start;
@@ -120,6 +100,7 @@ int		find_node_split_dim(double **data, int *node_indices, int n_features, int n
 int		partition_node_indices(double **data, int *node_indices, int split_dim, int split_index,
 								int n_features, int n_points)
 {
+	(void)n_features;
 	int		left, right, midindex, i;
 	double	d1, d2;
 
@@ -150,7 +131,7 @@ int		partition_node_indices(double **data, int *node_indices, int split_dim, int
 	return (0);
 }
 
-int		recursive_build(t_btree *b, int i_node, int idx_start, int idx_end)
+void	recursive_build(t_btree *b, int i_node, int idx_start, int idx_end)
 {
 	int	imax;
 	int	n_features;
@@ -185,7 +166,7 @@ int		recursive_build(t_btree *b, int i_node, int idx_start, int idx_end)
 	}
 }
 
-t_btree	*btree_init(double **data, int leaf_size)
+t_btree	*btree_init(double **data, int n_samples, int n_features, int leaf_size)
 {
 	t_btree	*b;
 	int		i, j;
@@ -196,24 +177,21 @@ t_btree	*btree_init(double **data, int leaf_size)
 	b->data = data;
 	b->leaf_size = leaf_size;
 	
-	if (arr_2d_len(data) == 0)
-	{
-		printf("data is an empty array\n");
-		exit(-1);
-	}
 	if (leaf_size < 1)
 	{
 		printf("leaf_size must be greater than or equal to 1\n");
 		exit(-1);
 	}
 
-	b->n_samples = arr_2d_len(data);
-	b->n_features = arr_1d_len(data[0]);
+	b->n_samples = n_samples;
+	b->n_features = n_features;
 
 	b->n_levels = log2(fmax(1, (b->n_samples - 1) / b->leaf_size)) + 1;
 	b->n_nodes = pow(2.0, b->n_levels) - 1;
 
 	b->idx_array = (int*)malloc(sizeof(int) * b->n_samples);
+	for (i = 0; i < b->n_samples; i++)
+		b->idx_array[i] = i;
 	b->node_data = (t_nodedata*)calloc(b->n_nodes, sizeof(t_nodedata));
 	b->node_bounds = (double***)malloc(sizeof(double**));
 	b->node_bounds[0] = (double**)malloc(sizeof(double*) * b->n_nodes);
@@ -271,30 +249,25 @@ int		query_depth_first(t_btree *b, int i_node, double *pt, int i_pt, t_nheap *he
 	return (0);
 }
 
-t_knn	btree_query(t_btree *b, double **x, int k)
+t_knn	btree_query(t_btree *b, double **x, int n_samples, int n_features, int k)
 {
 	t_nheap	*heap;
 	double	dist;
 	int		i;
-	int		n_points, n_features;
 	t_knn	output;
 
-	n_points = arr_2d_len(x);
-	for (i = 0; i < n_points; i++)
+	if (n_features != b->n_features)
 	{
-		if ((n_features = arr_1d_len(x[i])) != b->n_features)\
-		{
-			printf("Query data dimension must match training data dimension.\n");
-			exit(-1);
-		}
+		printf("query data dimension must match training data dimension.\n");
+		exit(-1);
 	}
 	if (b->n_samples < k)
 	{
 		printf("k must be less than or equal to the number of training points.\n");
 		exit(-1);
 	}
-	heap = nheap_init(n_points, k);
-	for (i = 0; i < n_points; i++)
+	heap = nheap_init(n_samples, k);
+	for (i = 0; i < n_samples; i++)
 	{
 		dist = min_dist(b, 0, x[i]);
 		query_depth_first(b, 0, x[i], i, heap, dist);
