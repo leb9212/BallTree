@@ -5,7 +5,7 @@ To compile:
 make
 
 To run:
-./balltree_knn \[input param jason file\] \[test data file\] \[path to output>
+./balltree_knn \[input param jason file\] \[test data file\] \[path to output\]
 
 For example:
 ./balltree_knn datasets/knn_params_6_pts_2_dims.json datasets/test_data_6_pts_2_dims.json datasets/my_knn_results_6_pts_2_dims.json

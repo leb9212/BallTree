@@ -6,7 +6,7 @@
 /*   By: elee <elee@student.42.us.org>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/28 17:45:08 by elee              #+#    #+#             */
-/*   Updated: 2017/06/28 21:23:39 by elee             ###   ########.fr       */
+/*   Updated: 2017/06/28 21:53:50 by elee             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -252,7 +252,7 @@ int		main(int argc, char **argv)
 
 	if (argc != 4)
 	{
-		fprintf(stderr, "%s <input param json file> <test data file> <path_to_output>\n", argv[0]);
+		fprintf(stderr, "%s [input param json file] [test data file] [path_to_output]\n", argv[0]);
 		exit(-1);
 	}
 
